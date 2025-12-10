@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍫 CocoaFlow CRM: Real Chocolate, Real Happiness</title>
+    <style>
+        /* --- CSS for Glassmorphism & Chocolate Theme (Updated Colors) --- */
+        :root {
+            --color-primary-brown: #4A2C2A; /* Deep Chocolate */
+            --color-secondary-cream: #F5F5DD; /* Updated Background Color */
+            --color-box-bg: #A57A5A; /* Updated Box/Glass Color */
+            --color-accent-gold: #FFD700; /* Rich Gold (Won) */
+            --color-lost-crimson: #B22222; /* Lost Crimson */
+            
+            /* Glassmorphism using the new box color */
+            --glass-bg: rgba(165, 122, 90, 0.4); /* #A57A5A with 40% opacity */
+            --card-bg: rgba(165, 122, 90, 0.6); /* #A57A5A with 60% opacity */
+            --border-color: rgba(255, 255, 255, 0.4);
+            --shadow-dark: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+
+        body {
+            /* Updated Background */
+            background-color: var(--color-secondary-cream); 
+            color: var(--color-primary-brown);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header { text-align: center; margin-bottom: 30px; }
+
+        h1 {
+            color: var(--color-primary-brown);
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Glass/Box Styles */
+        #lead-capture, .pipeline-column, .modal-content {
+            background: var(--glass-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-dark);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        #lead-capture { max-width: 600px; margin: 20px auto; padding: 20px; }
+
+        #lead-capture h2 {
+            color: var(--color-primary-brown);
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        #lead-capture input, #lead-capture button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--color-primary-brown);
+            font-size: 1em;
+        }
+
+        #capture-btn {
+            background-color: var(--color-primary-brown);
+            color: var(--color-secondary-cream);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #capture-btn:hover { background-color: #654321; }
+
+        #pipeline-board {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 10px 0;
+            min-height: 400px;
+        }
+
+        .pipeline-column {
+            min-width: 300px;
+            padding: 15px;
+            flex-shrink: 0;
+        }
+
+        .column-header {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--color-primary-brown);
+            color: var(--color-primary-brown);
+        }
+
+        .lead-card {
+            background: var(--card-bg);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            color: var(--color-secondary-cream); /* Card text should contrast with dark card background */
+        }
+
+        .lead-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-dark), 0 0 10px var(--color-accent-gold);
+        }
+
+        .card-name { font-weight: 700; margin-bottom: 5px; }
+        .card-email { font-size: 0.9em; color: rgba(255, 255, 255, 0.8); }
+        .card-amount { font-size: 0.9em; font-style: italic; color: var(--color-accent-gold); margin-top: 5px; }
+
+        .lead-card.status-Won { border: 2px solid var(--color-accent-gold); background: rgba(255, 215, 0, 0.1); }
+        .lead-card.status-Lost { border: 2px solid var(--color-lost-crimson); background: rgba(178, 34, 34, 0.1); }
+
+        .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; }
+
+        .modal-content {
+            padding: 40px; width: 80%; max-width: 500px;
+            color: var(--color-primary-brown); /* Modal text should be readable on the lighter glass background */
+        }
+
+        .close-btn { float: right; font-size: 28px; font-weight: bold; color: var(--color-primary-brown); cursor: pointer; }
+        .close-btn:hover { color: var(--color-lost-crimson); }
+        .modal-content h3 { border-bottom: 1px solid var(--color-primary-brown); padding-bottom: 10px; margin-bottom: 15px; }
+        .phase-control { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); }
+        .phase-control label { display: block; margin-bottom: 10px; cursor: pointer; }
+        .phase-control input[type="checkbox"] { margin-right: 10px; width: auto; }
+        .amount-capture input { margin-top: 10px; }
+
+        #save-status-btn {
+            margin-top: 15px; background-color: var(--color-primary-brown); color: var(--color-secondary-cream);
+            font-weight: bold; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: opacity 0.3s;
+        }
+        #save-status-btn:hover { opacity: 0.9; }
+
+        .loading-indicator { text-align: center; padding: 50px; color: var(--color-primary-brown); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🍫 CocoaFlow CRM</h1>
+        <p>Real Chocolate, Real Happiness</p>
+    </header>
+
+    <section id="lead-capture">
+        <h2>Capture your Lead</h2>
+        <input type="text" id="lead-name" placeholder="Contact Name" required>
+        <input type="email" id="lead-email" placeholder="Email Address" required>
+        <button id="capture-btn">Save Lead</button>
+        <p id="capture-message" style="color: var(--color-primary-brown); margin-top: 10px;"></p>
+    </section>
+
+    <main id="pipeline-board">
+        <div class="loading-indicator">Loading leads from Firestore...</div>
+    </main>
+
+    <div id="lead-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Lead Details: <span id="modal-lead-name"></span></h3>
+            <p><strong>Email:</strong> <span id="modal-lead-email"></span></p>
+            <p><strong>Current Status:</strong> <span id="modal-lead-status"></span></p>
+            <p id="modal-order-amount-display" style="margin-top: 10px; font-weight: bold;"></p>
+
+            <div id="amount-capture-field" class="amount-capture" style="display: none;">
+                <label>Order Amount (Kilos):</label>
+                <input type="number" id="order-amount-input" placeholder="Enter amount in Kilos" min="0">
+            </div>
+
+            <div class="phase-control">
+                <h4>Move Lead To:</h4>
+                <div id="movement-options">
+                    </div>
+                <button id="save-status-btn" data-lead-id="">Save Status</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        // --- 2. YOUR FIREBASE CONFIGURATION ---
+        // REPLACE THESE PLACEHOLDERS with your project's config from the Firebase Console
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjFUwBkk2JRW-Qy5obWjPKjHKA8uhYhXA",
+            authDomain: "crm-to-do-2d268.firebaseapp.com",
+            projectId: "crm-to-do-2d268",
+            storageBucket: "crm-to-do-2d268.firebasestorage.app",
+            messagingSenderId: "132114869404",
+            appId: "1:132114869404:web:d4c00c9f32820e7a5e1159"
+        };
+        // ------------------------------------
+        
+        // --- 3. Initialize Firebase & Firestore ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const leadsCollection = collection(db, 'leads');
+
+        // --- Constants & DOM Elements ---
+        const phases = ["New Lead", "Contacted", "Qualified", "Proposal Sent", "Won", "Lost"];
+        const pipelineBoard = document.getElementById('pipeline-board');
+        const modal = document.getElementById('lead-modal');
+        const saveStatusBtn = document.getElementById('save-status-btn');
+        const captureMessage = document.getElementById('capture-message');
+        const leadNameInput = document.getElementById('lead-name');
+        const leadEmailInput = document.getElementById('lead-email');
+        const amountCaptureField = document.getElementById('amount-capture-field');
+        const orderAmountInput = document.getElementById('order-amount-input');
+        const modalOrderAmountDisplay = document.getElementById('modal-order-amount-display');
+
+
+        // --- Lead Capture (Create) Logic ---
+
+        document.getElementById('capture-btn').addEventListener('click', async () => {
+            const name = leadNameInput.value.trim();
+            const email = leadEmailInput.value.trim();
+
+            if (!name || !email) {
+                captureMessage.textContent = 'Please enter both Name and Email.';
+                return;
+            }
+
+            try {
+                await addDoc(leadsCollection, {
+                    name: name,
+                    email: email,
+                    status: 'New Lead',
+                    orderAmountKilos: null, // Initialize new field
+                    createdAt: new Date()
+                });
+
+                captureMessage.textContent = `New Lead "${name}" saved to Firestore!`;
+                leadNameInput.value = '';
+                leadEmailInput.value = '';
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                captureMessage.textContent = `Error: Could not save lead. Check console.`;
+            }
+            setTimeout(() => captureMessage.textContent = '', 3000);
+        });
+
+        // --- Rendering Logic ---
+
+        function renderPipeline(leadsData) {
+            pipelineBoard.innerHTML = ''; 
+            
+            // 1. Create the columns
+            phases.forEach(phase => {
+                const column = document.createElement('div');
+                column.className = 'pipeline-column';
+                column.setAttribute('data-phase', phase);
+
+                const header = document.createElement('div');
+                header.className = 'column-header';
+                header.textContent = phase;
+                column.appendChild(header);
+
+                const cardContainer = document.createElement('div');
+                cardContainer.id = `column-${phase.replace(/\s/g, '-')}`;
+                column.appendChild(cardContainer);
+
+                pipelineBoard.appendChild(column);
+            });
+
+            // 2. Populate the columns with lead cards
+            leadsData.forEach(lead => {
+                const card = createLeadCard(lead);
+                const container = document.getElementById(`column-${lead.status.replace(/\s/g, '-')}`);
+                if (container) {
+                    container.appendChild(card);
+                }
+            });
+        }
+
+        function createLeadCard(lead) {
+            const card = document.createElement('div');
+            card.className = `lead-card status-${lead.status.replace(/\s/g, '-')}`;
+            card.setAttribute('data-id', lead.id);
+            
+            let amountHtml = '';
+            if (lead.orderAmountKilos && lead.status !== 'New Lead') {
+                 amountHtml = `<div class="card-amount">Amt: ${lead.orderAmountKilos} kg</div>`;
+            }
+
+            card.innerHTML = `
+                <div class="card-name">${lead.name}</div>
+                <div class="card-email">${lead.email}</div>
+                ${amountHtml}
+            `;
+            card.addEventListener('click', () => openModal(lead));
+            return card;
+        }
+        
+        // Listen for real-time updates from Firestore
+        onSnapshot(leadsCollection, (snapshot) => {
+            const leadsData = [];
+            snapshot.forEach(doc => {
+                leadsData.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+            renderPipeline(leadsData);
+        }, (error) => {
+            console.error("Error listening to Firestore:", error);
+            pipelineBoard.innerHTML = `<div class="loading-indicator" style="color: var(--color-lost-crimson);">Error loading leads: Check Firebase rules and configuration.</div>`;
+        });
+
+        // --- Modal & Movement (Update) Logic ---
+
+        function openModal(lead) {
+            document.getElementById('modal-lead-name').textContent = lead.name;
+            document.getElementById('modal-lead-email').textContent = lead.email;
+            document.getElementById('modal-lead-status').textContent = lead.status;
+            saveStatusBtn.setAttribute('data-lead-id', lead.id);
+
+            // Display Order Amount
+            if (lead.orderAmountKilos) {
+                modalOrderAmountDisplay.textContent = `Captured Amount: ${lead.orderAmountKilos} kg`;
+            } else {
+                modalOrderAmountDisplay.textContent = '';
+            }
+
+            const movementOptions = document.getElementById('movement-options');
+            movementOptions.innerHTML = '';
+            orderAmountInput.value = lead.orderAmountKilos || '';
+            amountCaptureField.style.display = 'none';
+
+            let possibleMoves = [];
+            
+            // Determine possible moves based on status (Handles requirements 3, 4, 5)
+            switch (lead.status) {
+                case 'New Lead':
+                    // Requirement 3: Only "Move to Contacted" is possible.
+                    possibleMoves.push('Contacted');
+                    break;
+                case 'Contacted':
+                    // Requirement 4: Keep 'Qualified' and 'Lost', remove 'Won'.
+                    possibleMoves.push('Qualified');
+                    possibleMoves.push('Lost');
+                    // Requirement 7: Show Order Amount field
+                    amountCaptureField.style.display = 'block';
+                    break;
+                case 'Qualified':
+                    // Requirement 5: Keep 'Proposal Sent' and 'Lost', remove 'Won'.
+                    possibleMoves.push('Proposal Sent');
+                    possibleMoves.push('Lost');
+                    break;
+                case 'Proposal Sent':
+                    // Standard move options from Proposal Sent
+                    possibleMoves.push('Won');
+                    possibleMoves.push('Lost');
+                    break;
+                default:
+                    // Won or Lost - no further movement
+                    break;
+            }
+
+            // Create movement checkboxes
+            possibleMoves.forEach(phase => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" name="next_phase" value="${phase}"> Move to **${phase}**`;
+                movementOptions.appendChild(label);
+            });
+            
+            if (possibleMoves.length === 0) {
+                 movementOptions.innerHTML = `<p>This lead is ${lead.status}. No further phase movement required.</p>`;
+                 saveStatusBtn.style.display = 'none';
+            } else {
+                 saveStatusBtn.style.display = 'block';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        // Close modal handlers
+        document.querySelector('.close-btn').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Save Status Button Handler (Update Lead Status and Order Amount)
+        saveStatusBtn.addEventListener('click', async () => {
+            const leadId = saveStatusBtn.getAttribute('data-lead-id');
+            const checkedBoxes = document.querySelectorAll('#movement-options input[type="checkbox"]:checked');
+            const currentStatus = document.getElementById('modal-lead-status').textContent;
+
+            if (checkedBoxes.length > 1) {
+                alert('Please select only ONE phase to move the lead to.');
+                return;
+            }
+
+            let updateData = {};
+            let newStatus = currentStatus;
+
+            if (checkedBoxes.length === 1) {
+                newStatus = checkedBoxes[0].value;
+                updateData.status = newStatus;
+            }
+
+            // Capture Order Amount if in Contacted phase
+            if (currentStatus === 'Contacted') {
+                const amount = parseFloat(orderAmountInput.value);
+                if (orderAmountInput.value.trim() !== '' && (isNaN(amount) || amount <= 0)) {
+                    alert('Please enter a valid Order Amount (Kilos) greater than zero, or clear the field.');
+                    return;
+                }
+                updateData.orderAmountKilos = amount || null; // Save as number or null
+            }
+            
+            // If no status was selected but the amount was updated in Contacted, we still save the amount.
+            if (Object.keys(updateData).length === 0) {
+                 alert('Please select a phase to move the lead.');
+                 return;
+            }
+
+            const leadRef = doc(db, 'leads', leadId);
+
+            try {
+                await updateDoc(leadRef, updateData);
+                console.log(`Lead ${leadId} updated.`);
+                modal.style.display = 'none';
+            } catch (e) {
+                console.error("Error updating document: ", e);
+                alert('Error updating status/amount in Firestore.');
+            }
+        });
+
+    </script>
+</body>
+</html>
